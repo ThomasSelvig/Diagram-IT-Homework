@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+<body style="margin: 0;">
+	<noscript><h1 style="color: red;">Du må kjøre denne siden med javascript skrudd på!</h1></noscript>
+	<h1 style="margin: 5vh auto -4vh; text-align: center;">Tilfeldig generert aksjekurs</h1>
+
+	<div id="chart_border" style="
+		/*border: 1px solid red; */
+		height: 75vh; 
+		width: 75vw; 
+		margin: 10vh auto 0;">
+		
+		<svg id="chart" width="100" height="100">
+			<defs>
+				<marker id="sirkel" markerWidth="6" markerHeight="6" refX="3" refY="3">
+					<circle cx="3" cy="3" r="2" fill="DarkSlateGrey"></circle>
+				</marker>
+			</defs>
+			<polyline 
+				id="stock_line"
+				marker-mid="url(#sirkel)"
+				stroke="darkcyan"
+				stroke-width="2"
+				fill="none" />
+			<g text-anchor="middle" font-size="12" font-family="arial" fill="black" id="text_container"></g>
+		</svg>
+
+	</div>
+
+	<script>
+
+		const chart_div = document.getElementById("chart_border");
+		const chart_svg = document.getElementById("chart");
+
+		// gjør chart til riktig størrelse ved å bruke størrelsen til allerede skalerte chart_border div
+		let [width, height] = ["width", "height"].map(i => parseFloat(window.getComputedStyle(chart_div).getPropertyValue(i)))
+		chart_svg.setAttribute("width", width);
+		chart_svg.setAttribute("height", height);
+
+		// generer tilfeldig aksjedata
+		const points = [];
+		for (let i = 0; i < Math.floor(width * 0.02); i++) {
+			points.push(Math.random());
+		}
+
+		function sleep(ms) {
+			return new Promise(resolve => setTimeout(resolve, ms));
+		}
+
+		async function add_point(x, y) {
+			let svg_point = chart_svg.createSVGPoint();
+			svg_point.x = x;
+			// flip y retning til å peke motsatt retning
+			svg_point.y = height - y;
+			// legg til punktet
+			document.getElementById("stock_line").points.appendItem(svg_point);
+			// legg til teksten
+			document.getElementById("text_container").innerHTML += 
+				`<text x="${x}" y="${height - y - 10}">${Math.round(x)}, ${Math.round(y)}</text>`;
+		}
+
+		async function main() {
+			// legg til punkter fra `points` til chart
+			const padding = 100;
+			for (let [i, point] of points.entries()) {
+				await add_point(
+					padding / 2 + i * ((width - padding) / (points.length - 1)), 
+					padding / 2 + point * (height - padding)
+				);
+				await sleep(100);
+			}
+
+			// console.log(document.getElementById("stock_line").points);
+		}
+
+		main();
+
+	</script>
+	
+</body>
+</html>
